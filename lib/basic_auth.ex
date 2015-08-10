@@ -1,12 +1,14 @@
 defmodule BasicAuth do
   def init(options) do
-    options
+    username = Keyword.fetch!(options, :username)
+    password = Keyword.fetch!(options, :password)
+    %{username: username, password: password}
   end
 
-  def call(conn, _options) do
+  def call(conn, options) do
     header_content = Plug.Conn.get_req_header(conn, "authorization")
 
-    if header_content |> valid_credentials? do
+    if header_content |> valid_credentials?(options) do
       conn
     else
       conn
@@ -14,12 +16,12 @@ defmodule BasicAuth do
     end
   end
 
-  defp valid_credentials?(["Basic " <> encoded_string]) do
-    Base.decode64!(encoded_string) == "admin:secret"
+  defp valid_credentials?(["Basic " <> encoded_string], options) do
+    Base.decode64!(encoded_string) == "#{options[:username]}:#{options[:password]}"
   end
 
   # Handle scenarios where there are no basic auth credentials supplied
-  defp valid_credentials?(_) do
+  defp valid_credentials?(_credentials, _options) do
     false
   end
 
