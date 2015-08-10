@@ -1,8 +1,9 @@
 defmodule BasicAuth do
   def init(options) do
+    realm    = Keyword.fetch!(options, :realm)
     username = Keyword.fetch!(options, :username)
     password = Keyword.fetch!(options, :password)
-    %{username: username, password: password}
+    %{realm: realm, username: username, password: password}
   end
 
   def call(conn, options) do
@@ -12,7 +13,7 @@ defmodule BasicAuth do
       conn
     else
       conn
-      |> send_unauthorized_response
+      |> send_unauthorized_response(options[:realm])
     end
   end
 
@@ -25,8 +26,8 @@ defmodule BasicAuth do
     false
   end
 
-  defp send_unauthorized_response(conn) do
-    Plug.Conn.put_resp_header(conn, "www-authenticate", "Basic realm=\"WallyWorld\"")
+  defp send_unauthorized_response(conn, realm) do
+    Plug.Conn.put_resp_header(conn, "www-authenticate", "Basic realm=\"#{realm}\"")
     |> Plug.Conn.send_resp(401, "401 Unauthorized")
     |> Plug.Conn.halt
   end
