@@ -1,0 +1,2 @@
+defmodule BasicAuth do
+end
