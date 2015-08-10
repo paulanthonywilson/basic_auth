@@ -47,7 +47,7 @@ At the top of my controller I have something that looks like:
 
 Then for any tests, I can simply pipe in this helper method to the connection process:
 ```elixir
-test "GET /" do
+test "GET / successfully renders when basic auth credentials supplied" do
   conn = conn()
     |> using_basic_auth(@username, @password)
     |> get("/admin/users")
@@ -58,7 +58,7 @@ end
 
 And a test case without basic auth for completeness:
 ```elixir
-test "GET /" do
+test "GET / without basic auth credentials prevents access" do
   conn = conn()
     |> get("/admin/users")
 
