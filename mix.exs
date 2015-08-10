@@ -3,6 +3,8 @@ defmodule BasicAuth.Mixfile do
 
   def project do
     [app: :basic_auth,
+     description: "Basic Authentication Plug",
+     package: package,
      version: "0.0.1",
      elixir: "~> 1.0",
      build_embedded: Mix.env == :prod,
@@ -25,9 +27,4 @@ defmodule BasicAuth.Mixfile do
      links: %{github: "https://github.com/mconnell/basic_auth"},
      files: ~w(lib LICENSE.md mix.exs README.md)]
   end
-
-  defp description do
-    "Basic Authentication Plug"
-  end
-
 end
