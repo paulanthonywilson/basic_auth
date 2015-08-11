@@ -21,8 +21,8 @@ Easy as that!
 ## Testing controllers with Basic Auth
 
 This is still an evolving process for me, but my current approach is to keep the basic auth
-credentials stored as environment variables, and reference these variables in both the plug
-declaration, and in the tests.
+credentials stored inside the phoenix config files e.g. `config/dev.exs`, and reference these
+variables in both the plug declaration, and in the tests.
 
 ### Store credentials in config
 
