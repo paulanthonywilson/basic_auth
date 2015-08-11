@@ -5,7 +5,7 @@ defmodule BasicAuth.Mixfile do
     [app: :basic_auth,
      description: "Basic Authentication Plug",
      package: package,
-     version: "0.0.1",
+     version: "0.0.2",
      elixir: "~> 1.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -24,7 +24,7 @@ defmodule BasicAuth.Mixfile do
   defp package do
     [contributors: ["Mark Connell",],
      licenses: ["MIT"],
-     links: %{github: "https://github.com/mconnell/basic_auth"},
+     links: %{github: "https://github.com/cultivatehq/basic_auth"},
      files: ~w(lib LICENSE.md mix.exs README.md)]
   end
 end
