@@ -29,8 +29,8 @@ variables in both the plug declaration, and in the tests.
 So, similar to the above example, we can set the plug config to look like:
 ```elixir
 plug BasicAuth, realm: "Admin Area",
-                username: Application.get_env(:fakebook, :basic_auth)[:username],
-                password: Application.get_env(:fakebook, :basic_auth)[:password]
+                username: Application.get_env(:my_app_name, :basic_auth)[:username],
+                password: Application.get_env(:my_app_name, :basic_auth)[:password]
 ```
 
 And we can then fetch the username and password from configuration files. This has the
@@ -38,7 +38,7 @@ advantage of not hardcoding production config into our codebase:
 
 ```elixir
 # dev.exs, test.exs
-config :my_application_name, :basic_auth,
+config :my_app_name, :basic_auth,
   username: "admin",
   password: "secret"
 ```
@@ -48,8 +48,8 @@ config :my_application_name, :basic_auth,
 At the top of my controller I have something that looks like:
 
 ```elixir
-@username Application.get_env(:fakebook, :basic_auth)[:username]
-@password Application.get_env(:fakebook, :basic_auth)[:password]
+@username Application.get_env(:my_app_name, :basic_auth)[:username]
+@password Application.get_env(:my_app_name, :basic_auth)[:password]
 
 defp using_basic_auth(conn, username, password) do
   header_content = "Basic " <> Base.encode64("#{username}:#{password}")
