@@ -20,31 +20,41 @@ Easy as that!
 
 ## Testing controllers with Basic Auth
 
-This is still an evolving process for me, but my current approach is to keep the basic auth credentials stored as environment variables, and reference these variables in both the plug declaration, and in the tests.
+This is still an evolving process for me, but my current approach is to keep the basic auth
+credentials stored as environment variables, and reference these variables in both the plug
+declaration, and in the tests.
 
-### Using ENV vars
+### Store credentials in config
 
 So, similar to the above example, we can set the plug config to look like:
 ```elixir
 plug BasicAuth, realm: "Admin Area",
-                username: System.get_env("BASIC_AUTH_NAME"),
-                password: System.get_env("BASIC_AUTH_PASSWORD")
+                username: Application.get_env(:fakebook, :basic_auth)[:username],
+                password: Application.get_env(:fakebook, :basic_auth)[:password]
 ```
 
-Where `BASIC_AUTH_NAME` and `BASIC_AUTH_PASSWORD` are just environment variables set in my local `.bash_profile`.
+And we can then fetch the username and password from configuration files. This has the
+advantage of not hardcoding production config into our codebase:
+
+```elixir
+# dev.exs, test.exs
+config :my_application_name, :basic_auth,
+  username: "admin",
+  password: "secret"
+```
 
 ### Update Tests to insert a basic authentication header
 
 At the top of my controller I have something that looks like:
 
 ```elixir
-  @username System.get_env("BASIC_AUTH_NAME")
-  @password System.get_env("BASIC_AUTH_PASSWORD")
+@username Application.get_env(:fakebook, :basic_auth)[:username]
+@password Application.get_env(:fakebook, :basic_auth)[:password]
 
-  defp using_basic_auth(conn, username, password) do
-    header_content = "Basic " <> Base.encode64("#{username}:#{password}")
-    conn |> put_req_header("authorization", header_content)
-  end
+defp using_basic_auth(conn, username, password) do
+  header_content = "Basic " <> Base.encode64("#{username}:#{password}")
+  conn |> put_req_header("authorization", header_content)
+end
 ```
 
 Then for any tests, I can simply pipe in this helper method to the connection process:
