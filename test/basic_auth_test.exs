@@ -21,6 +21,7 @@ defmodule BasicAuthTest do
     |> call
 
     assert conn.status == 401
+    assert Plug.Conn.get_resp_header(conn, "www-authenticate") == [ "Basic realm=\"Admin Area\""]
   end
 
   test "invalid credentials returns a 401" do
