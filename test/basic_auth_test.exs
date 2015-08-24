@@ -12,13 +12,9 @@ defmodule BasicAuthTest do
     defp index(conn, _opts), do: conn |> send_resp(200, "OK")
   end
 
-  defp call(conn) do
-    DemoPlug.call(conn, [])
-  end
-
   test "no credentials returns a 401" do
     conn = conn(:get, "/")
-    |> call
+    |> DemoPlug.call([])
 
     assert conn.status == 401
     assert Plug.Conn.get_resp_header(conn, "www-authenticate") == [ "Basic realm=\"Admin Area\""]
@@ -29,7 +25,7 @@ defmodule BasicAuthTest do
 
     conn = conn(:get, "/")
     |> put_req_header("authorization", header_content)
-    |> call
+    |> DemoPlug.call([])
 
     assert conn.status == 401
   end
@@ -39,7 +35,7 @@ defmodule BasicAuthTest do
 
     conn = conn(:get, "/")
     |> put_req_header("authorization", header_content)
-    |> call
+    |> DemoPlug.call([])
 
     assert conn.status == 401
   end
@@ -49,7 +45,7 @@ defmodule BasicAuthTest do
 
     conn = conn(:get, "/")
     |> put_req_header("authorization", header_content)
-    |> call
+    |> DemoPlug.call([])
 
     assert conn.status == 200
   end
