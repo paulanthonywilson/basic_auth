@@ -4,11 +4,10 @@ defmodule BasicAuth do
   end
 
   def init(options) do
-    #Better to fail at compile time if keys are incorrect
+    # Better to fail at compile time if keys are incorrect
     [:password, :realm, :username] = Keyword.keys(options) |> Enum.sort
     options
   end
-
 
   def call(conn, options) do
     header_content = Plug.Conn.get_req_header(conn, "authorization")
@@ -35,7 +34,6 @@ defmodule BasicAuth do
     |> Plug.Conn.send_resp(401, "401 Unauthorized")
     |> Plug.Conn.halt
   end
-
 
   defp option_value({:application_config, application}, key) do
     Application.get_env(application, key)
