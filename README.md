@@ -7,7 +7,7 @@ This is an Elixir Plug for adding basic authentication into an application.
 Add the package as a dependency in your Elixir project using something along the lines of:
 ```elixir
   defp deps do
-    [{:basic_auth, ">= 0.0.2"}]
+    [{:basic_auth, "~> 1.0.0"}]
   end
 ```
 
