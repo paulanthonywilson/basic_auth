@@ -18,38 +18,58 @@ plug BasicAuth, realm: "Admin Area", username: "admin", password: "secret"
 
 Easy as that!
 
-## Testing controllers with Basic Auth
+## Storing credentials for deployment / testing
 
-This is still an evolving process for me, but my current approach is to keep the basic auth
-credentials stored inside the phoenix config files e.g. `config/dev.exs`, and reference these
-variables in both the plug declaration, and in the tests.
+The above example is great to get going with basic auth, and depending on your use case,
+might be everything you need. Generally speaking, we don't want to store credentials in version
+control for security reasons.
 
-### Store credentials in config
+### Store credentials in config files
 
-So, similar to the above example, we can set the plug config to look like:
+Instead of passing credentials into the plug directly, we can pass a tuple to the plug to tell
+it we want to use some variables we've stored in config files:
+
 ```elixir
-plug BasicAuth, realm: "Admin Area",
-                username: Application.get_env(:my_app_name, :basic_auth)[:username],
-                password: Application.get_env(:my_app_name, :basic_auth)[:password]
+  # inside router or controller file
+  plug BasicAuth, {:application_config, :admin_basic_auth}
 ```
 
-And we can then fetch the username and password from configuration files. This has the
-advantage of not hardcoding production config into our codebase:
+And then we can setup some configuration using something like the following:
 
 ```elixir
 # dev.exs, test.exs
-config :my_app_name, :basic_auth,
-  username: "admin",
-  password: "secret"
+config :admin_basic_auth, realm: "Admin Area", username: "admin", password: "secret"
 ```
+
+```elixir
+# config/prod.exs
+config :admin_basic_auth, realm: "Admin Area",
+                          username: System.get_env("BASIC_AUTH_USER"),
+                          password: System.get_env("BASIC_AUTH_PASSWORD")
+```
+
+The example above for `config/prod.exs` makes use of system ENV vars. You could use String objects
+if your `config/prod.exs` is outside of version control, but for environments like Heroku, it's easier
+to use ENV vars for storing configuration.
+
+## Testing controllers with Basic Auth
+
+If you're storing credentials within configuration files, we can reuse them within our test files
+directly using snippets like `Application.get_env(:admin_basic_auth)[:username]`.
 
 ### Update Tests to insert a basic authentication header
 
-At the top of my controller I have something that looks like:
+Any controller that makes use of basic authentication, will need an additional header injected into
+the connection in order for your tests to continue to work. The following is a brief snippet of how
+to get started. There is a more detailed
+[blog post](http://www.cultivatehq.com/posts/add-basic-authentication-to-a-phoenix-application/) that
+explains a bit more about what needs to be done.
+
+At the top of my controller test I have something that looks like:
 
 ```elixir
-@username Application.get_env(:my_app_name, :basic_auth)[:username]
-@password Application.get_env(:my_app_name, :basic_auth)[:password]
+@username Application.get_env(:admin_basic_auth)[:username]
+@password Application.get_env(:admin_basic_auth)[:password]
 
 defp using_basic_auth(conn, username, password) do
   header_content = "Basic " <> Base.encode64("#{username}:#{password}")
