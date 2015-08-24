@@ -26,12 +26,12 @@ control for security reasons.
 
 ### Store credentials in config files
 
-Instead of passing credentials into the plug directly, we can pass a tuple to the plug to tell
+Instead of passing credentials into the plug directly, we can pass a `use_config` option to the plug to tell
 it we want to use some variables we've stored in config files:
 
 ```elixir
   # inside router or controller file
-  plug BasicAuth, {:application_config, :admin_basic_auth}
+  plug BasicAuth, use_config: :admin_basic_auth
 ```
 
 And then we can setup some configuration using something like the following:

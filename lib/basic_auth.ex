@@ -1,5 +1,5 @@
 defmodule BasicAuth do
-  def init(options = {:application_config, _}) do
+  def init([use_config: _] = options) do
     options
   end
 
@@ -35,8 +35,8 @@ defmodule BasicAuth do
     |> Plug.Conn.halt
   end
 
-  defp option_value({:application_config, application}, key) do
-    Application.get_env(application, key)
+  defp option_value([use_config: config_key], key) do
+    Application.get_env(config_key, key)
   end
 
   defp option_value(options, key) do

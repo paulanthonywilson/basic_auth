@@ -53,7 +53,7 @@ defmodule BasicAuthTest do
   defmodule DemoPlugApplicationConfigured do
     use Plug.Builder
 
-    plug BasicAuth, {:application_config, :myapp}
+    plug BasicAuth, use_config: :myapp
 
     plug :index
     defp index(conn, _opts), do: conn |> send_resp(200, "OK")
