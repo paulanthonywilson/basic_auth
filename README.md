@@ -31,21 +31,27 @@ it we want to use some variables we've stored in config files:
 
 ```elixir
   # inside router or controller file
-  plug BasicAuth, use_config: :admin_basic_auth
+  plug BasicAuth, Application.get_env(:the_app, :admin_basic_auth)
 ```
 
 And then we can setup some configuration using something like the following:
 
 ```elixir
 # dev.exs, test.exs
-config :admin_basic_auth, realm: "Admin Area", username: "admin", password: "secret"
+config :the_app, :admin_basic_auth, [
+  realm: "Admin Area",
+  username: "sample",
+  password: "sample"
+]
 ```
 
 ```elixir
-# config/prod.exs
-config :admin_basic_auth, realm: "Admin Area",
-                          username: System.get_env("BASIC_AUTH_USER"),
-                          password: System.get_env("BASIC_AUTH_PASSWORD")
+# config/prod.secret.exs
+config :the_app, :admin_basic_auth, [
+  realm: "Admin Area",
+  username: System.get_env("BASIC_AUTH_USER"),
+  password: System.get_env("BASIC_AUTH_PASSWORD")
+]
 ```
 
 The example above for `config/prod.exs` makes use of system ENV vars. You could use String objects
