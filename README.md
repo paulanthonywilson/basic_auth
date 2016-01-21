@@ -74,8 +74,8 @@ explains a bit more about what needs to be done.
 At the top of my controller test I have something that looks like:
 
 ```elixir
-@username Application.get_env(:admin_basic_auth)[:username]
-@password Application.get_env(:admin_basic_auth)[:password]
+@username Application.get_env(:the_app, :admin_basic_auth)[:username]
+@password Application.get_env(:the_app, :admin_basic_auth)[:password]
 
 defp using_basic_auth(conn, username, password) do
   header_content = "Basic " <> Base.encode64("#{username}:#{password}")
@@ -86,7 +86,7 @@ end
 Then for any tests, I can simply pipe in this helper method to the connection process:
 ```elixir
 test "GET / successfully renders when basic auth credentials supplied" do
-  conn = conn()
+  conn = conn
     |> using_basic_auth(@username, @password)
     |> get("/admin/users")
 
@@ -97,7 +97,7 @@ end
 And a test case without basic auth for completeness:
 ```elixir
 test "GET / without basic auth credentials prevents access" do
-  conn = conn()
+  conn = conn
     |> get("/admin/users")
 
   assert html_response(conn, 401) =~ "401 Unauthorized"
