@@ -53,7 +53,7 @@ defmodule BasicAuthTest do
   defmodule DemoPlugApplicationConfigured do
     use Plug.Builder
 
-    plug BasicAuth, use_config: :myapp
+    plug BasicAuth, use_config: {:myapp, :basic_auth}
 
     plug :index
     defp index(conn, _opts), do: conn |> send_resp(200, "OK")
@@ -72,7 +72,7 @@ defmodule BasicAuthTest do
   end
 
   test "realm from application config is read at runtime" do
-    {realm, _, _} = setup_application_config
+    {_realm, _username, _password} = setup_application_config
 
     conn = conn(:get, "/")
     |> DemoPlugApplicationConfigured.call([])
@@ -83,13 +83,11 @@ defmodule BasicAuthTest do
 
   defp setup_application_config do
     appname = :myapp
-    username = "user"
-    password = "passw0rd"
-    realm = "my realm"
+    config = [username: username = "user",
+              password: password = "passw0rd",
+              realm: realm = "my realm"]
 
-    Application.put_env(appname, :realm, realm)
-    Application.put_env(appname, :username, username)
-    Application.put_env(appname, :password, password)
+    Application.put_env(appname, :basic_auth, config)
 
     {realm, username, password}
   end
