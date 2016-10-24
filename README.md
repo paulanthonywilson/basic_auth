@@ -100,6 +100,6 @@ test "GET / without basic auth credentials prevents access" do
   conn = conn
     |> get("/admin/users")
 
-  assert html_response(conn, 401) =~ "401 Unauthorized"
+  assert response(conn, 401) =~ "401 Unauthorized"
 end
 ```
