@@ -35,8 +35,9 @@ defmodule BasicAuth do
     |> Plug.Conn.halt
   end
 
-  defp option_value([use_config: config_key], key) do
-    Application.get_env(config_key, key)
+  defp option_value([use_config: {app, config_key}], option_key) do
+    Application.fetch_env!(app, config_key)
+    |> Keyword.get(option_key) || raise ArgumentError, "value for option #{inspect option_key} is not set"
   end
 
   defp option_value(options, key) do
