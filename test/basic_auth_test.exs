@@ -2,11 +2,16 @@ defmodule BasicAuthTest do
   use ExUnit.Case, async: true
   use Plug.Test
 
+  setup do
+    System.put_env("PASSWORD", password = "passw0rd")
+
+    {:ok, password: password }
+  end
   # Demo plug with basic auth and a simple index action
   defmodule DemoPlug do
     use Plug.Builder
 
-    plug BasicAuth, realm: "Admin Area", username: "admin", password: "secret"
+    plug BasicAuth, realm: "Admin Area", username: "admin", password: {:system, "PASSWORD"}
 
     plug :index
     defp index(conn, _opts), do: conn |> send_resp(200, "OK")
@@ -30,8 +35,8 @@ defmodule BasicAuthTest do
     assert conn.status == 401
   end
 
-  test "incorrect header returns a 401" do
-    header_content = "Banana " <> Base.encode64("admin:secret")
+  test "incorrect header returns a 401", %{password: password} do
+    header_content = "Banana " <> Base.encode64("admin:#{password}")
 
     conn = conn(:get, "/")
     |> put_req_header("authorization", header_content)
@@ -40,8 +45,8 @@ defmodule BasicAuthTest do
     assert conn.status == 401
   end
 
-  test "valid credentials returns a 200" do
-    header_content = "Basic " <> Base.encode64("admin:secret")
+  test "valid credentials returns a 200", %{password: password} do
+    header_content = "Basic " <> Base.encode64("admin:#{password}")
 
     conn = conn(:get, "/")
     |> put_req_header("authorization", header_content)
@@ -59,8 +64,8 @@ defmodule BasicAuthTest do
     defp index(conn, _opts), do: conn |> send_resp(200, "OK")
   end
 
-  test "reading credentials from application config happens at runtime" do
-    {_realm, username, password} = setup_application_config
+  test "reading credentials from application config happens at runtime", %{password: password} do
+    {_realm, username} = setup_application_config
 
     header_content = "Basic " <> Base.encode64("#{username}:#{password}")
 
@@ -72,7 +77,7 @@ defmodule BasicAuthTest do
   end
 
   test "realm from application config is read at runtime" do
-    {_realm, _username, _password} = setup_application_config
+    {_realm, _username} = setup_application_config
 
     conn = conn(:get, "/")
     |> DemoPlugApplicationConfigured.call([])
@@ -84,11 +89,11 @@ defmodule BasicAuthTest do
   defp setup_application_config do
     appname = :myapp
     config = [username: username = "user",
-              password: password = "passw0rd",
+              password: {:system, "PASSWORD"},
               realm: realm = "my realm"]
 
     Application.put_env(appname, :basic_auth, config)
 
-    {realm, username, password}
+    {realm, username}
   end
 end

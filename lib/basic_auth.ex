@@ -37,10 +37,14 @@ defmodule BasicAuth do
 
   defp option_value([use_config: {app, config_key}], option_key) do
     Application.fetch_env!(app, config_key)
-    |> Keyword.get(option_key) || raise ArgumentError, "value for option #{inspect option_key} is not set"
+    |> Keyword.get(option_key)
+    |> to_value || raise ArgumentError, "value for option #{inspect option_key} is not set"
   end
 
   defp option_value(options, key) do
-    options[key]
+    to_value(options[key])
   end
+
+  defp to_value({:system, env_var}), do: System.get_env(env_var)
+  defp to_value(value), do: value
 end

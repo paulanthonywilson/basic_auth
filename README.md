@@ -50,13 +50,15 @@ config :the_app, :basic_auth, [
 config :the_app, :basic_auth, [
   realm: "Admin Area",
   username: System.get_env("BASIC_AUTH_USER"),
-  password: System.get_env("BASIC_AUTH_PASSWORD")
+  password: {:system, "BASIC_AUTH_PASSWORD"}
 ]
 ```
 
 The example above for `config/prod.exs` makes use of system ENV vars. You could use String objects
 if your `config/prod.exs` is outside of version control, but for environments like Heroku, it's easier
-to use ENV vars for storing configuration.
+to use ENV vars for storing configuration. When a tuple like `{:system,
+"BASIC_AUTH_PASSWORD"}` is provided the value will be referenced from
+`System.get_env("BASIC_AUTH_PASSWORD")` at run time.
 
 ## Testing controllers with Basic Auth
 
