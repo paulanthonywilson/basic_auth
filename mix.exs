@@ -18,11 +18,14 @@ defmodule BasicAuth.Mixfile do
 
   defp deps do
     [{:cowboy, "~> 1.0"},
-     {:plug, "~> 0.14 or ~> 1.0"}]
+     {:plug, "~> 0.14 or ~> 1.0"},
+     {:ex_doc, ">= 0.0.0", only: :dev},
+    ]
   end
 
   defp package do
     [contributors: ["Mark Connell", "Paul Wilson"],
+     maintainers: ["Paul Wilson"],
      licenses: ["MIT"],
      links: %{github: "https://github.com/cultivatehq/basic_auth"},
      files: ~w(lib LICENSE.md mix.exs README.md)]
