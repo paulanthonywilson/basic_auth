@@ -5,7 +5,7 @@ defmodule BasicAuth.Mixfile do
     [app: :basic_auth,
      description: "Basic Authentication Plug",
      package: package,
-     version: "1.2.0-rc",
+     version: "1.2.0",
      elixir: "~> 1.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
