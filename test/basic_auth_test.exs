@@ -2,98 +2,97 @@ defmodule BasicAuthTest do
   use ExUnit.Case, async: true
   use Plug.Test
 
-  setup do
-    System.put_env("PASSWORD", password = "passw0rd")
-
-    {:ok, password: password }
-  end
-  # Demo plug with basic auth and a simple index action
   defmodule DemoPlug do
-    use Plug.Builder
+    defmacro __using__(auth_config) do
+      quote bind_quoted: [auth_config: auth_config] do
+        use Plug.Builder
+        plug BasicAuth, use_config: {:basic_auth, auth_config}
 
-    plug BasicAuth, realm: "Admin Area", username: "admin", password: {:system, "PASSWORD"}
-
-    plug :index
-    defp index(conn, _opts), do: conn |> send_resp(200, "OK")
+        plug :index
+        defp index(conn, _opts), do: conn |> send_resp(200, "OK")
+      end
+    end
   end
 
-  test "no credentials returns a 401" do
-    conn = conn(:get, "/")
-    |> DemoPlug.call([])
+  describe "credential checking" do
+    defmodule SimpleDemoPlug do
+      use DemoPlug, :my_auth
+    end
 
-    assert conn.status == 401
-    assert Plug.Conn.get_resp_header(conn, "www-authenticate") == [ "Basic realm=\"Admin Area\""]
+    test "no credentials returns a 401" do
+      conn = conn(:get, "/")
+      |> SimpleDemoPlug.call([])
+
+      assert conn.status == 401
+      assert Plug.Conn.get_resp_header(conn, "www-authenticate") == [ "Basic realm=\"Admin Area\""]
+    end
+
+    test "invalid credentials returns a 401" do
+      header_content = "Basic " <> Base.encode64("bad:credentials")
+
+      conn = conn(:get, "/")
+      |> put_req_header("authorization", header_content)
+      |> SimpleDemoPlug.call([])
+
+      assert conn.status == 401
+    end
+
+    test "incorrect header returns a 401" do
+      header_content = "Banana " <> Base.encode64("admin:simple_password")
+
+      conn = conn(:get, "/")
+      |> put_req_header("authorization", header_content)
+      |> SimpleDemoPlug.call([])
+
+      assert conn.status == 401
+    end
+
+    test "valid credentials returns a 200" do
+      header_content = "Basic " <> Base.encode64("admin:simple_password")
+
+      conn = conn(:get, "/")
+      |> put_req_header("authorization", header_content)
+      |> SimpleDemoPlug.call([])
+
+      assert conn.status == 200
+    end
   end
 
-  test "invalid credentials returns a 401" do
-    header_content = "Basic " <> Base.encode64("bad:credentials")
+  describe "reading config from System environment" do
+    defmodule SimpleDemoPlugWithSystem do
+      use DemoPlug, :my_auth_with_system
+    end
 
-    conn = conn(:get, "/")
-    |> put_req_header("authorization", header_content)
-    |> DemoPlug.call([])
 
-    assert conn.status == 401
+    test "username and password" do
+      System.put_env("USERNAME", "bananauser")
+      System.put_env("PASSWORD", "bananapassword")
+
+      header_content = "Basic " <> Base.encode64("bananauser:bananapassword")
+      conn = conn(:get, "/")
+      |> put_req_header("authorization", header_content)
+      |> SimpleDemoPlugWithSystem.call([])
+
+      assert conn.status == 200
+    end
+
+    test "realm" do
+      System.put_env("REALM", "Banana")
+      conn = conn(:get, "/")
+      |> SimpleDemoPlugWithSystem.call([])
+      assert Plug.Conn.get_resp_header(conn, "www-authenticate") == [ "Basic realm=\"Banana\""]
+    end
   end
 
-  test "incorrect header returns a 401", %{password: password} do
-    header_content = "Banana " <> Base.encode64("admin:#{password}")
+  # test "config value not being set error" do
+  #   Application.put_env(:myapp, :basic_auth, [username: "yada"])
+  #   header_content = "Basic " <> Base.encode64("admin:simple_password")
+  #   conn = conn(:get, "/")
+  #   |> put_req_header("authorization", header_content)
 
-    conn = conn(:get, "/")
-    |> put_req_header("authorization", header_content)
-    |> DemoPlug.call([])
+  #   assert_raise ArgumentError, "configuration value for option :password is not set", fn ->
+  #     SimpleDemoPlug.call(conn, [])
+  #   end
+  # end
 
-    assert conn.status == 401
-  end
-
-  test "valid credentials returns a 200", %{password: password} do
-    header_content = "Basic " <> Base.encode64("admin:#{password}")
-
-    conn = conn(:get, "/")
-    |> put_req_header("authorization", header_content)
-    |> DemoPlug.call([])
-
-    assert conn.status == 200
-  end
-
-  defmodule DemoPlugApplicationConfigured do
-    use Plug.Builder
-
-    plug BasicAuth, use_config: {:myapp, :basic_auth}
-
-    plug :index
-    defp index(conn, _opts), do: conn |> send_resp(200, "OK")
-  end
-
-  test "reading credentials from application config happens at runtime", %{password: password} do
-    {_realm, username} = setup_application_config
-
-    header_content = "Basic " <> Base.encode64("#{username}:#{password}")
-
-    conn = conn(:get, "/")
-    |> put_req_header("authorization", header_content)
-    |> DemoPlugApplicationConfigured.call([])
-
-    assert conn.status == 200
-  end
-
-  test "realm from application config is read at runtime" do
-    {_realm, _username} = setup_application_config
-
-    conn = conn(:get, "/")
-    |> DemoPlugApplicationConfigured.call([])
-
-    assert conn.status == 401
-    assert Plug.Conn.get_resp_header(conn, "www-authenticate") == [ "Basic realm=\"my realm\""]
-  end
-
-  defp setup_application_config do
-    appname = :myapp
-    config = [username: username = "user",
-              password: {:system, "PASSWORD"},
-              realm: realm = "my realm"]
-
-    Application.put_env(appname, :basic_auth, config)
-
-    {realm, username}
-  end
 end
