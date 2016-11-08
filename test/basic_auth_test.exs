@@ -7,7 +7,6 @@ defmodule BasicAuthTest do
       quote bind_quoted: [auth_config: auth_config] do
         use Plug.Builder
         plug BasicAuth, use_config: {:basic_auth, auth_config}
-
         plug :index
         defp index(conn, _opts), do: conn |> send_resp(200, "OK")
       end

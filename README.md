@@ -2,6 +2,17 @@
 
 This is an Elixir Plug for adding basic authentication into an application.
 
+## Breaking change
+
+Note that putting values directly into the plug is no longer supported.
+
+```elixir
+
+## NO LONGER SUPPORTED
+
+plug BasicAuth, realm: "realm", password: "password", username: "username"
+```
+
 ## How to use
 
 Add the package as a dependency in your Elixir project using something along the lines of:
@@ -12,53 +23,36 @@ Add the package as a dependency in your Elixir project using something along the
 ```
 
 Add into the top of a controller, or into a router pipeline a plug declaration like:
+
 ```elixir
-plug BasicAuth, realm: "Admin Area", username: "admin", password: "secret"
+plug BasicAuth, use_config: {:your_app, :your_key}
 ```
+
+
+  Where :your_app and :your_key should refer to values in your application config.
+
+  In your configuration you can set values directly, eg
+
+  ```elixir
+
+  config :your_app, your_config: [
+    username: "admin",
+    password: "simple_password",
+    realm: "Admin Area"
+  ]
+  ```
+
+  or choose to get one (or all) from environment variables, eg
+
+  ```elixir
+  config :basic_auth, my_auth_with_system: [
+    username: {:system, "BASIC_AUTH_USERNAME"},
+    password: {:system, "BASIC_AUTH_PASSWORD"},
+    realm:    {:system, "BASIC_AUTH_REALM"}
+  ]
+  ```
 
 Easy as that!
-
-## Storing credentials for deployment / testing
-
-The above example is great to get going with basic auth, and depending on your use case,
-might be everything you need. Generally speaking, we don't want to store credentials in version
-control for security reasons.
-
-### Store credentials in config files
-
-Instead of passing credentials into the plug directly, we can pass a `use_config` option to the plug to tell
-it we want to use some variables we've stored in config files:
-
-```elixir
-  # inside router or controller file
-  plug BasicAuth, Application.get_env(:the_app, :basic_auth)
-```
-
-And then we can setup some configuration using something like the following:
-
-```elixir
-# dev.exs, test.exs
-config :the_app, :basic_auth, [
-  realm: "Admin Area",
-  username: "sample",
-  password: "sample"
-]
-```
-
-```elixir
-# config/prod.secret.exs
-config :the_app, :basic_auth, [
-  realm: "Admin Area",
-  username: System.get_env("BASIC_AUTH_USER"),
-  password: {:system, "BASIC_AUTH_PASSWORD"}
-]
-```
-
-The example above for `config/prod.exs` makes use of system ENV vars. You could use String objects
-if your `config/prod.exs` is outside of version control, but for environments like Heroku, it's easier
-to use ENV vars for storing configuration. When a tuple like `{:system,
-"BASIC_AUTH_PASSWORD"}` is provided the value will be referenced from
-`System.get_env("BASIC_AUTH_PASSWORD")` at run time.
 
 ## Testing controllers with Basic Auth
 

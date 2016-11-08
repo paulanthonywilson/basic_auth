@@ -5,7 +5,7 @@ defmodule BasicAuth.Mixfile do
     [app: :basic_auth,
      description: "Basic Authentication Plug",
      package: package,
-     version: "1.2.0",
+     version: "2.0.0",
      elixir: "~> 1.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -20,6 +20,7 @@ defmodule BasicAuth.Mixfile do
     [{:cowboy, "~> 1.0"},
      {:plug, "~> 0.14 or ~> 1.0"},
      {:ex_doc, ">= 0.0.0", only: :dev},
+     {:credo, ">= 0.0.0", only: [:dev, :test]},
     ]
   end
 
