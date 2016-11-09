@@ -82,16 +82,4 @@ defmodule BasicAuthTest do
       assert Plug.Conn.get_resp_header(conn, "www-authenticate") == [ "Basic realm=\"Banana\""]
     end
   end
-
-  # test "config value not being set error" do
-  #   Application.put_env(:myapp, :basic_auth, [username: "yada"])
-  #   header_content = "Basic " <> Base.encode64("admin:simple_password")
-  #   conn = conn(:get, "/")
-  #   |> put_req_header("authorization", header_content)
-
-  #   assert_raise ArgumentError, "configuration value for option :password is not set", fn ->
-  #     SimpleDemoPlug.call(conn, [])
-  #   end
-  # end
-
 end
