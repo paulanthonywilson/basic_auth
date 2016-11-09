@@ -18,7 +18,7 @@ plug BasicAuth, realm: "realm", password: "password", username: "username"
 Add the package as a dependency in your Elixir project using something along the lines of:
 ```elixir
   defp deps do
-    [{:basic_auth, "~> 1.0.0"}]
+    [{:basic_auth, "~> 2.0.0"}]
   end
 ```
 
