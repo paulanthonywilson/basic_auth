@@ -5,7 +5,7 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.14.3">
-    <title>BasicAuth – basic_auth v1.2.0</title>
+    <title>BasicAuth – basic_auth v2.0.0</title>
     <link rel="stylesheet" href="dist/app-091c05798a.css" />
     
       <link rel="canonical" href="https://hexdocs.pm/basic_auth/BasicAuth.html" />
@@ -28,7 +28,7 @@
         basic_auth
       </h1>
       <h2 class="sidebar-projectVersion">
-        v1.2.0
+        v2.0.0
       </h2>
     </div>
     
@@ -60,12 +60,32 @@
 
 
       <h1>
-        <small class="visible-xs">basic_auth v1.2.0</small>
+        <small class="visible-xs">basic_auth v2.0.0</small>
         BasicAuth
         
         
       </h1>
 
+      
+        <section id="moduledoc">
+          <p>Plug for adding basic authentication. Usage:</p>
+<p>plug BasicAuth, use_config: {:your_app, :your_key}</p>
+<p>Where :your_app and :your_key should refer to values in your application config.</p>
+<p>In your configuration you can set values directly, eg</p>
+<pre><code class="elixir">
+config :your_app, your_config: [
+  username: &quot;admin&quot;,
+  password: &quot;simple_password&quot;,
+  realm: &quot;Admin Area&quot;
+]</code></pre>
+<p>or choose to get one (or all) from environment variables, eg</p>
+<pre><code class="elixir">config :basic_auth, my_auth_with_system: [
+  username: {:system, &quot;BASIC_AUTH_USERNAME&quot;},
+  password: {:system, &quot;BASIC_AUTH_PASSWORD&quot;},
+  realm:    {:system, &quot;BASIC_AUTH_REALM&quot;}
+]</code></pre>
+
+        </section>
       
 
       
@@ -91,7 +111,7 @@
 </div>
 <div class="summary-row">
   <div class="summary-signature">
-    <a href="#init/1">init(options)</a>
+    <a href="#init/1">init(arg1)</a>
   </div>
   
 </div>
@@ -137,7 +157,7 @@
     <a href="#init/1" class="detail-link" title="Link to this function">
       <i class="icon-link"></i>
     </a>
-    <span class="signature">init(options)</span>
+    <span class="signature">init(arg1)</span>
     
     
     
