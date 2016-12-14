@@ -28,6 +28,17 @@ defmodule BasicAuth do
   ]
   ```
 
+  Alternatively you can provide a custom function to the plug to authenticate the user any way
+  you want, such as finding the user from a database.
+
+  ```elixir
+  plug BasicAuth, callback: &User.find_by_username_and_password/3
+  ```
+
+  Where :callback is your custom authentication function that takes a conn, username and a
+  password and returns a conn.  Your function must return `Plug.Conn.halt(conn)` if authentication
+  fails, otherwise you can use `Plug.Conn.assign(conn, :current_user, ...)` to enhance
+  the conn with variables or session for your controller.
   """
 
   defstruct username: nil, password: nil, realm: nil
