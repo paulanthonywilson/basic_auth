@@ -5,10 +5,8 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.14.3">
-    <title>BasicAuth – basic_auth v2.0.0</title>
+    <title>BasicAuth – basic_auth v2.1.0</title>
     <link rel="stylesheet" href="dist/app-091c05798a.css" />
-    
-      <link rel="canonical" href="https://hexdocs.pm/basic_auth/BasicAuth.html" />
     
     <script src="dist/sidebar_items.js"></script>
   </head>
@@ -28,7 +26,7 @@
         basic_auth
       </h1>
       <h2 class="sidebar-projectVersion">
-        v2.0.0
+        v2.1.0
       </h2>
     </div>
     
@@ -60,7 +58,7 @@
 
 
       <h1>
-        <small class="visible-xs">basic_auth v2.0.0</small>
+        <small class="visible-xs">basic_auth v2.1.0</small>
         BasicAuth
         
         
@@ -84,6 +82,13 @@ config :your_app, your_config: [
   password: {:system, &quot;BASIC_AUTH_PASSWORD&quot;},
   realm:    {:system, &quot;BASIC_AUTH_REALM&quot;}
 ]</code></pre>
+<p>Alternatively you can provide a custom function to the plug to authenticate the user any way
+you want, such as finding the user from a database.</p>
+<pre><code class="elixir">plug BasicAuth, callback: &amp;User.find_by_username_and_password/3</code></pre>
+<p>Where :callback is your custom authentication function that takes a conn, username and a
+password and returns a conn.  Your function must return <code class="inline">Plug.Conn.halt(conn)</code> if authentication
+fails, otherwise you can use <code class="inline">Plug.Conn.assign(conn, :current_user, ...)</code> to enhance
+the conn with variables or session for your controller.</p>
 
         </section>
       
