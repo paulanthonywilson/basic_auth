@@ -49,12 +49,12 @@ defmodule BasicAuth do
 
     Usage of BasicAuth using application config:
     plug BasicAuth, use_config: {:your_app, :your_key}
-    
+
     -OR-
     Using custom authentication function:
     plug BasicAuth, callback: &MyCustom.function/3
 
-    Where :callback takes a conn, username and password and returns a conn.  
+    Where :callback takes a conn, username and password and returns a conn.
     """
   end
 
@@ -62,9 +62,11 @@ defmodule BasicAuth do
     header_content = Plug.Conn.get_req_header(conn, "authorization")
     respond(conn, header_content, options)
   end
-  
+
   defp respond(conn, ["Basic " <> encoded_string], options) do
-    [username, password] = Base.decode64!(encoded_string) |> String.split(":")
+    [username, password] = encoded_string
+    |> Base.decode64!
+    |> String.split(":")
     respond(conn, username, password, options)
   end
 

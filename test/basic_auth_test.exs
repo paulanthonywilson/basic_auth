@@ -62,7 +62,6 @@ defmodule BasicAuthTest do
       |> SimpleDemoPlugWithModule.call([])
       assert conn.status == 200
     end
-    
   end
 
   describe "credential checking" do
