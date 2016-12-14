@@ -2,6 +2,14 @@
 
 This is an Elixir Plug for adding basic authentication into an application.
 
+The plug can be configured to use:
+
+1) Static username and password in application configuration
+
+-OR-
+
+2) Your own custom authentication function
+
 ## Breaking change
 
 Note that putting values directly into the plug is no longer supported.
@@ -28,7 +36,6 @@ Add into the top of a controller, or into a router pipeline a plug declaration l
 plug BasicAuth, use_config: {:your_app, :your_key}
 ```
 
-
   Where :your_app and :your_key should refer to values in your application config.
 
   In your configuration you can set values directly, eg
@@ -51,6 +58,18 @@ plug BasicAuth, use_config: {:your_app, :your_key}
     realm:    {:system, "BASIC_AUTH_REALM"}
   ]
   ```
+
+Alternatively you can provide a custom function to the plug to authenticate the user any way
+you want, such as finding the user from a database.
+
+```elixir
+  plug BasicAuth, callback: &User.find_by_username_and_password/3
+```
+
+  Where :callback is your custom authentication function that takes a conn, username and a 
+  password and returns a conn.  Your function must return `Plug.Conn.halt(conn)` if authentication
+  fails, otherwise you can use `Plug.Conn.assign(conn, :current_user, ...)` to enhance
+  the conn with variables or session for your controller.
 
 Easy as that!
 
