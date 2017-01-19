@@ -4,12 +4,12 @@ defmodule BasicAuth.Mixfile do
   def project do
     [app: :basic_auth,
      description: "Basic Authentication Plug",
-     package: package,
-     version: "2.1.0",
+     package: package(),
+     version: "2.1.1",
      elixir: "~> 1.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps]
+     deps: deps()]
   end
 
   def application do
