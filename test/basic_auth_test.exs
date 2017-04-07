@@ -3,21 +3,10 @@ defmodule BasicAuthTest do
   use Plug.Test
 
   defmodule DemoPlug do
-    defmacro __using__(auth_config) do
-      quote bind_quoted: [auth_config: auth_config] do
+    defmacro __using__(args) do
+      quote bind_quoted: [args: args] do
         use Plug.Builder
-        plug BasicAuth, use_config: {:basic_auth, auth_config}
-        plug :index
-        defp index(conn, _opts), do: conn |> send_resp(200, "OK")
-      end
-    end
-  end
-
-  defmodule DemoPlugWithModule do
-    defmacro __using__(function) do
-      quote bind_quoted: [function: function] do
-        use Plug.Builder
-        plug BasicAuth, callback: function
+        plug BasicAuth, args
         plug :index
         defp index(conn, _opts), do: conn |> send_resp(200, "OK")
       end
@@ -35,14 +24,26 @@ defmodule BasicAuthTest do
       end
     end
 
-    defmodule SimpleDemoPlugWithModule do
-      use DemoPlugWithModule, &User.find_by_username_and_password/3
+    defmodule PlugWithCallback do
+      use DemoPlug, callback: &User.find_by_username_and_password/3
+    end
+
+    defmodule PlugWithCallbackAndRealm do
+      use DemoPlug, callback: &User.find_by_username_and_password/3, realm: "Bob's Kingdom"
     end
 
     test "no credentials provided" do
       conn = conn(:get, "/")
-      |> SimpleDemoPlugWithModule.call([])
+      |> PlugWithCallback.call([])
       assert conn.status == 401
+      assert Plug.Conn.get_resp_header(conn, "www-authenticate") == [ "Basic realm=\"Basic Authentication\""]
+    end
+
+    test "no credentials provided with custom realm" do
+      conn = conn(:get, "/")
+      |> PlugWithCallbackAndRealm.call([])
+      assert conn.status == 401
+      assert Plug.Conn.get_resp_header(conn, "www-authenticate") == [ "Basic realm=\"Bob's Kingdom\""]
     end
 
     test "wrong credentials provided" do
@@ -50,7 +51,7 @@ defmodule BasicAuthTest do
 
       conn = conn(:get, "/")
       |> put_req_header("authorization", header_content)
-      |> SimpleDemoPlugWithModule.call([])
+      |> PlugWithCallback.call([])
       assert conn.status == 401
     end
 
@@ -59,19 +60,19 @@ defmodule BasicAuthTest do
 
       conn = conn(:get, "/")
       |> put_req_header("authorization", header_content)
-      |> SimpleDemoPlugWithModule.call([])
+      |> PlugWithCallback.call([])
       assert conn.status == 200
     end
   end
 
   describe "credential checking" do
-    defmodule SimpleDemoPlug do
-      use DemoPlug, :my_auth
+    defmodule SimplePlug do
+      use DemoPlug, use_config: {:basic_auth, :my_auth}
     end
 
     test "no credentials returns a 401" do
       conn = conn(:get, "/")
-      |> SimpleDemoPlug.call([])
+      |> SimplePlug.call([])
 
       assert conn.status == 401
       assert Plug.Conn.get_resp_header(conn, "www-authenticate") == [ "Basic realm=\"Admin Area\""]
@@ -82,7 +83,7 @@ defmodule BasicAuthTest do
 
       conn = conn(:get, "/")
       |> put_req_header("authorization", header_content)
-      |> SimpleDemoPlug.call([])
+      |> SimplePlug.call([])
 
       assert conn.status == 401
     end
@@ -92,7 +93,7 @@ defmodule BasicAuthTest do
 
       conn = conn(:get, "/")
       |> put_req_header("authorization", header_content)
-      |> SimpleDemoPlug.call([])
+      |> SimplePlug.call([])
 
       assert conn.status == 401
     end
@@ -102,15 +103,15 @@ defmodule BasicAuthTest do
 
       conn = conn(:get, "/")
       |> put_req_header("authorization", header_content)
-      |> SimpleDemoPlug.call([])
+      |> SimplePlug.call([])
 
       assert conn.status == 200
     end
   end
 
   describe "reading config from System environment" do
-    defmodule SimpleDemoPlugWithSystem do
-      use DemoPlug, :my_auth_with_system
+    defmodule SimplePlugWithSystem do
+      use DemoPlug, use_config: {:basic_auth, :my_auth_with_system}
     end
 
 
@@ -121,7 +122,7 @@ defmodule BasicAuthTest do
       header_content = "Basic " <> Base.encode64("bananauser:bananapassword")
       conn = conn(:get, "/")
       |> put_req_header("authorization", header_content)
-      |> SimpleDemoPlugWithSystem.call([])
+      |> SimplePlugWithSystem.call([])
 
       assert conn.status == 200
     end
@@ -129,7 +130,7 @@ defmodule BasicAuthTest do
     test "realm" do
       System.put_env("REALM", "Banana")
       conn = conn(:get, "/")
-      |> SimpleDemoPlugWithSystem.call([])
+      |> SimplePlugWithSystem.call([])
       assert Plug.Conn.get_resp_header(conn, "www-authenticate") == [ "Basic realm=\"Banana\""]
     end
   end
