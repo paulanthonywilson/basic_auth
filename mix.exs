@@ -9,7 +9,11 @@ defmodule BasicAuth.Mixfile do
      elixir: "~> 1.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps()]
+     deps: deps(),
+     docs: [
+       main: "BasicAuth",
+     ],
+    ]
   end
 
   def application do
@@ -25,10 +29,12 @@ defmodule BasicAuth.Mixfile do
   end
 
   defp package do
-    [contributors: ["Mark Connell", "Paul Wilson"],
-     maintainers: ["Paul Wilson"],
-     licenses: ["MIT"],
-     links: %{github: "https://github.com/cultivatehq/basic_auth"},
-     files: ~w(lib LICENSE.md mix.exs README.md)]
+    [
+      contributors: ["Mark Connell", "Paul Wilson"],
+      maintainers: ["Paul Wilson"],
+      licenses: ["MIT"],
+      links: %{github: "https://github.com/cultivatehq/basic_auth"},
+      files: ~w(lib LICENSE.md mix.exs README.md),
+    ]
   end
 end

@@ -3,13 +3,15 @@ defmodule BasicAuth do
   @moduledoc """
   Plug for adding basic authentication. Usage:
 
+  ```elixir
   plug BasicAuth, use_config: {:your_app, :your_key}
+  ```
 
   Where :your_app and :your_key should refer to values in your application config.
 
   In your configuration you can set values directly, eg
 
-  ```
+  ```elixir
 
   config :your_app, your_config: [
     username: "admin",
@@ -20,7 +22,7 @@ defmodule BasicAuth do
 
   or choose to get one (or all) from environment variables, eg
 
-  ```
+  ```elixir
   config :basic_auth, my_auth_with_system: [
     username: {:system, "BASIC_AUTH_USERNAME"},
     password: {:system, "BASIC_AUTH_PASSWORD"},
@@ -38,7 +40,7 @@ defmodule BasicAuth do
   (or optionally provide a realm)
 
   ```elixir
-  plug BasicAuth, callback: &User.find_by_username_and_password/3, realm: "My super realm"
+  plug BasicAuth, callback: &User.find_by_username_and_password/3, realm: "Area 51"
   ```
 
   Where :callback is your custom authentication function that takes a conn, username and a
