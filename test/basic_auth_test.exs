@@ -98,6 +98,16 @@ defmodule BasicAuthTest do
       assert conn.status == 401
     end
 
+    test "incorrect basic auth formatting returns a 401" do
+      header_content = "Basic " <> Base.encode64("bogus")
+
+      conn = conn(:get, "/")
+      |> put_req_header("authorization", header_content)
+      |> SimplePlug.call([])
+
+      assert conn.status == 401
+    end
+
     test "valid credentials returns a 200" do
       header_content = "Basic " <> Base.encode64("admin:simple_password")
 
