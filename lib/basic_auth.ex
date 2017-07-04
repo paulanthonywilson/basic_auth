@@ -87,13 +87,13 @@ defmodule BasicAuth do
   end
 
   defp respond(conn, ["Basic " <> encoded_string], options) do
-    decoded = encoded_string
-    |> Base.decode64!
-    |> String.split(":")
-
-    case decoded do
-      [username, password] -> respond(conn, username, password, options)
-      [_] -> send_unauthorized_response(conn, options) 
+    with {:ok, string} <- Base.decode64(encoded_string),
+         [username, password] <- String.split(string, ":")
+    do
+      respond(conn, username, password, options)
+    else
+      _ ->
+        send_unauthorized_response(conn, options)
     end
   end
 
