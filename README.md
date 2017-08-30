@@ -42,7 +42,7 @@ plug BasicAuth, use_config: {:your_app, :your_key}
 
   ```elixir
 
-  config :your_app, your_config: [
+  config :your_app, your_key: [
     username: "admin",
     password: "simple_password",
     realm: "Admin Area"
