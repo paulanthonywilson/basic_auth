@@ -33,16 +33,16 @@ Add the package as a dependency in your Elixir project using something along the
 Add into the top of a controller, or into a router pipeline a plug declaration like:
 
 ```elixir
-plug BasicAuth, use_config: {:your_app, :your_key}
+plug BasicAuth, use_config: {:your_app, :your_config}
 ```
 
-  Where :your_app and :your_key should refer to values in your application config.
+  Where :your_app and :your_config should refer to values in your application config.
 
   In your configuration you can set values directly, eg
 
   ```elixir
 
-  config :your_app, your_key: [
+  config :your_app, your_config: [
     username: "admin",
     password: "simple_password",
     realm: "Admin Area"
@@ -84,13 +84,13 @@ Easy as that!
 If you're looking to authenticate only for a subset of actions in a controller you can use plug's `when action in` syntax as shown below
 
   ```elixir
-    plug BasicAuth, [use_config: {: your_app, : your_key}] when action in [:edit, :delete]
+    plug BasicAuth, [use_config: {: your_app, : your_config}] when action in [:edit, :delete]
   ```
 
   additionally you can exclude specific actions using `not`
 
   ```elixir
-    plug BasicAuth, [use_config: {: your_app, : your_key}] when not action in [:index, :show]
+    plug BasicAuth, [use_config: {: your_app, : your_config}] when not action in [:index, :show]
   ```
 
 ## Testing controllers with Basic Auth

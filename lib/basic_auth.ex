@@ -4,10 +4,10 @@ defmodule BasicAuth do
   Plug for adding basic authentication. Usage:
 
   ```elixir
-  plug BasicAuth, use_config: {:your_app, :your_key}
+  plug BasicAuth, use_config: {:your_app, :your_config}
   ```
 
-  Where :your_app and :your_key should refer to values in your application config.
+  Where :your_app and :your_config should refer to values in your application config.
 
   In your configuration you can set values directly, eg
 
@@ -71,7 +71,7 @@ defmodule BasicAuth do
     raise ArgumentError, """
 
     Usage of BasicAuth using application config:
-    plug BasicAuth, use_config: {:your_app, :your_key}
+    plug BasicAuth, use_config: {:your_app, :your_config}
 
     -OR-
     Using custom authentication function:
