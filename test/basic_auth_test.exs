@@ -22,6 +22,14 @@ defmodule BasicAuthTest do
           Plug.Conn.halt(conn)
         end
       end
+
+      def find_by_username_and_password_with_colons(conn, username, password) do
+        if username == "robert" && password == "secret:value:has:colons" do
+          Plug.Conn.assign(conn, :current_user, %{name: "robert"})
+        else
+          Plug.Conn.halt(conn)
+        end
+      end
     end
 
     defmodule PlugWithCallback do
@@ -30,6 +38,10 @@ defmodule BasicAuthTest do
 
     defmodule PlugWithCallbackAndRealm do
       use DemoPlug, callback: &User.find_by_username_and_password/3, realm: "Bob's Kingdom"
+    end
+
+    defmodule PlugWithCallbackWithColonsInPassword do
+      use DemoPlug, callback: &User.find_by_username_and_password_with_colons/3
     end
 
     test "no credentials provided" do
@@ -63,11 +75,24 @@ defmodule BasicAuthTest do
       |> PlugWithCallback.call([])
       assert conn.status == 200
     end
+
+    test "password allows a colon" do
+      header_content = "Basic " <> Base.encode64("robert:secret:value:has:colons")
+
+      conn = conn(:get, "/")
+      |> put_req_header("authorization", header_content)
+      |> PlugWithCallbackWithColonsInPassword.call([])
+      assert conn.status == 200
+    end
   end
 
   describe "credential checking" do
     defmodule SimplePlug do
       use DemoPlug, use_config: {:basic_auth, :my_auth}
+    end
+
+    defmodule SimplePlugWithColonsInPassword do
+      use DemoPlug, use_config: {:basic_auth, :my_auth_with_colons}
     end
 
     test "no credentials returns a 401" do
@@ -124,6 +149,16 @@ defmodule BasicAuthTest do
       conn = conn(:get, "/")
       |> put_req_header("authorization", header_content)
       |> SimplePlug.call([])
+
+      assert conn.status == 200
+    end
+
+    test "valid credentials with colons in password returns a 200" do
+      header_content = "Basic " <> Base.encode64("admin:simple_password:with:colons")
+
+      conn = conn(:get, "/")
+      |> put_req_header("authorization", header_content)
+      |> SimplePlugWithColonsInPassword.call([])
 
       assert conn.status == 200
     end
