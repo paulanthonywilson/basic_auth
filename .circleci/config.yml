@@ -1,0 +1,12 @@
+version: 1
+jobs:
+  build:
+    working_directory: ~/basic_auth
+    docker:
+      - image: circleci/elixir:1.5.1
+    steps:
+      - checkout
+      - run: mix local.hex --force
+      - run: mix local.rebar --force
+      - run: mix deps.get
+      - run: mix test
