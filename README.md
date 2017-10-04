@@ -10,23 +10,12 @@ The plug can be configured to use:
 
 2) Your own custom authentication function
 
-## Breaking change
-
-Note that putting values directly into the plug is no longer supported.
-
-```elixir
-
-## NO LONGER SUPPORTED
-
-plug BasicAuth, realm: "realm", password: "password", username: "username"
-```
-
 ## How to use
 
 Add the package as a dependency in your Elixir project using something along the lines of:
 ```elixir
   defp deps do
-    [{:basic_auth, "~> 2.1.5"}]
+    [{:basic_auth, "~> 2.2"}]
   end
 ```
 
@@ -72,10 +61,18 @@ you want, such as finding the user from a database.
   plug BasicAuth, callback: &User.find_by_username_and_password/3, realm: "Area 51"
 ```
 
-  Where :callback is your custom authentication function that takes a conn, username and a
-  password and returns a conn.  Your function must return `Plug.Conn.halt(conn)` if authentication
-  fails, otherwise you can use `Plug.Conn.assign(conn, :current_user, ...)` to enhance
-  the conn with variables or session for your controller.
+Where :callback is your custom authentication function that takes a conn, username
+and a password and returns a conn. Your function must return `Plug.Conn.halt(conn)`
+if authentication fails, otherwise you can use `Plug.Conn.assign(conn, :current_user, ...)`
+to enhance the conn with variables or session for your controller.
+
+The function must have an arity of 3, and be of the form
+
+```elixir
+@spec myfunction(Plug.Conn.t, String.t, String.t) :: Plug.Conn.t
+```
+
+It will receive a connection, username, and password.
 
 Easy as that!
 

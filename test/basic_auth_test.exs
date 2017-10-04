@@ -1,35 +1,34 @@
 defmodule BasicAuthTest do
-  use ExUnit.Case, async: true
+ use ExUnit.Case, async: true
   use Plug.Test
 
-  defmodule DemoPlug do
-    defmacro __using__(args) do
-      quote bind_quoted: [args: args] do
-        use Plug.Builder
-        plug BasicAuth, args
-        plug :index
-        defp index(conn, _opts), do: conn |> send_resp(200, "OK")
-      end
-    end
+  defmodule SimplePlug do
+    use DemoPlug, use_config: {:basic_auth, :my_auth}
+  end
+
+  setup do
+    Application.delete_env(:basic_auth, :my_auth)
+    :ok
+  end
+
+  defp call_with_credentials(plug, authentication) do
+    header_content = "Basic " <> Base.encode64(authentication)
+    :get
+    |> conn("/")
+    |> put_req_header("authorization", header_content)
+    |> plug.call([])
+  end
+
+  defp call_without_credentials(plug) do
+    :get
+    |> conn("/")
+    |> plug.call([])
   end
 
   describe "custom function" do
     defmodule User do
-      def find_by_username_and_password(conn, username, password) do
-        if username == "robert" && password == "secret" do
-          Plug.Conn.assign(conn, :current_user, %{name: "robert"})
-        else
-          Plug.Conn.halt(conn)
-        end
-      end
-
-      def find_by_username_and_password_with_colons(conn, username, password) do
-        if username == "robert" && password == "secret:value:has:colons" do
-          Plug.Conn.assign(conn, :current_user, %{name: "robert"})
-        else
-          Plug.Conn.halt(conn)
-        end
-      end
+      def find_by_username_and_password(conn, "robert", "secret:value"), do: conn
+      def find_by_username_and_password(conn, _, _), do: Plug.Conn.halt(conn)
     end
 
     defmodule PlugWithCallback do
@@ -40,81 +39,59 @@ defmodule BasicAuthTest do
       use DemoPlug, callback: &User.find_by_username_and_password/3, realm: "Bob's Kingdom"
     end
 
-    defmodule PlugWithCallbackWithColonsInPassword do
-      use DemoPlug, callback: &User.find_by_username_and_password_with_colons/3
-    end
-
     test "no credentials provided" do
-      conn = conn(:get, "/")
-      |> PlugWithCallback.call([])
+      conn = call_without_credentials(PlugWithCallback)
       assert conn.status == 401
       assert Plug.Conn.get_resp_header(conn, "www-authenticate") == [ "Basic realm=\"Basic Authentication\""]
     end
 
-    test "no credentials provided with custom realm" do
-      conn = conn(:get, "/")
-      |> PlugWithCallbackAndRealm.call([])
-      assert conn.status == 401
+    test "with custom realm" do
+      conn = call_with_credentials(PlugWithCallbackAndRealm, "wrong:wrong")
       assert Plug.Conn.get_resp_header(conn, "www-authenticate") == [ "Basic realm=\"Bob's Kingdom\""]
     end
 
     test "wrong credentials provided" do
-      header_content = "Basic " <> Base.encode64("bad:credentials")
-
-      conn = conn(:get, "/")
-      |> put_req_header("authorization", header_content)
-      |> PlugWithCallback.call([])
+      conn = call_with_credentials(PlugWithCallback, "wrong:password")
       assert conn.status == 401
     end
 
     test "right credentials provided" do
-      header_content = "Basic " <> Base.encode64("robert:secret")
-
-      conn = conn(:get, "/")
-      |> put_req_header("authorization", header_content)
-      |> PlugWithCallback.call([])
+      conn = call_with_credentials(PlugWithCallback, "robert:secret:value")
       assert conn.status == 200
     end
 
-    test "password allows a colon" do
-      header_content = "Basic " <> Base.encode64("robert:secret:value:has:colons")
-
-      conn = conn(:get, "/")
-      |> put_req_header("authorization", header_content)
-      |> PlugWithCallbackWithColonsInPassword.call([])
-      assert conn.status == 200
+    test "incorrect basic auth formatting returns a 401" do
+      conn = call_with_credentials(PlugWithCallback, "robert")
+      assert conn.status == 401
     end
   end
 
-  describe "credential checking" do
-    defmodule SimplePlug do
-      use DemoPlug, use_config: {:basic_auth, :my_auth}
-    end
+  describe "with username and password from configuration" do
 
-    defmodule SimplePlugWithColonsInPassword do
-      use DemoPlug, use_config: {:basic_auth, :my_auth_with_colons}
+    setup do
+      Application.put_env(:basic_auth, :my_auth, username: "admin",
+        password: "simple:password", realm: "Admin Area")
     end
 
     test "no credentials returns a 401" do
-      conn = conn(:get, "/")
-      |> SimplePlug.call([])
-
+      conn = call_without_credentials(SimplePlug)
       assert conn.status == 401
       assert Plug.Conn.get_resp_header(conn, "www-authenticate") == [ "Basic realm=\"Admin Area\""]
     end
 
+    test "default realm" do
+      Application.put_env(:basic_auth, :my_auth, username: "admin", password: "simple:password")
+      conn = call_without_credentials(SimplePlug)
+      assert Plug.Conn.get_resp_header(conn, "www-authenticate") == [ "Basic realm=\"Basic Authentication\""]
+    end
+
     test "invalid credentials returns a 401" do
-      header_content = "Basic " <> Base.encode64("bad:credentials")
-
-      conn = conn(:get, "/")
-      |> put_req_header("authorization", header_content)
-      |> SimplePlug.call([])
-
+      conn = call_with_credentials(SimplePlug, "wrong:password")
       assert conn.status == 401
     end
 
     test "incorrect header returns a 401" do
-      header_content = "Banana " <> Base.encode64("admin:simple_password")
+      header_content = "Banana " <> Base.encode64("admin:simple:password")
 
       conn = conn(:get, "/")
       |> put_req_header("authorization", header_content)
@@ -124,12 +101,7 @@ defmodule BasicAuthTest do
     end
 
     test "incorrect basic auth formatting returns a 401" do
-      header_content = "Basic " <> Base.encode64("bogus")
-
-      conn = conn(:get, "/")
-      |> put_req_header("authorization", header_content)
-      |> SimplePlug.call([])
-
+      conn = call_with_credentials(SimplePlug, "bob")
       assert conn.status == 401
     end
 
@@ -144,49 +116,59 @@ defmodule BasicAuthTest do
     end
 
     test "valid credentials returns a 200" do
-      header_content = "Basic " <> Base.encode64("admin:simple_password")
-
-      conn = conn(:get, "/")
-      |> put_req_header("authorization", header_content)
-      |> SimplePlug.call([])
-
-      assert conn.status == 200
-    end
-
-    test "valid credentials with colons in password returns a 200" do
-      header_content = "Basic " <> Base.encode64("admin:simple_password:with:colons")
-
-      conn = conn(:get, "/")
-      |> put_req_header("authorization", header_content)
-      |> SimplePlugWithColonsInPassword.call([])
-
+      conn = call_with_credentials(SimplePlug, "admin:simple:password")
       assert conn.status == 200
     end
   end
 
-  describe "reading config from System environment" do
-    defmodule SimplePlugWithSystem do
-      use DemoPlug, use_config: {:basic_auth, :my_auth_with_system}
-    end
+  describe "configured to get username and password from System" do
 
+    setup do
+      Application.put_env(:basic_auth, :my_auth, [
+            username: {:system, "USERNAME"},
+            password: {:system, "PASSWORD"},
+            realm: {:system, "REALM"},
+          ])
+      :ok
+    end
 
     test "username and password" do
       System.put_env("USERNAME", "bananauser")
-      System.put_env("PASSWORD", "bananapassword")
+      System.put_env("PASSWORD", "banana:password")
 
-      header_content = "Basic " <> Base.encode64("bananauser:bananapassword")
-      conn = conn(:get, "/")
-      |> put_req_header("authorization", header_content)
-      |> SimplePlugWithSystem.call([])
-
+      conn = call_with_credentials(SimplePlug, "bananauser:banana:password")
       assert conn.status == 200
     end
 
     test "realm" do
       System.put_env("REALM", "Banana")
-      conn = conn(:get, "/")
-      |> SimplePlugWithSystem.call([])
+      conn = call_without_credentials(SimplePlug)
       assert Plug.Conn.get_resp_header(conn, "www-authenticate") == [ "Basic realm=\"Banana\""]
+    end
+  end
+
+  describe "missing configuration" do
+
+    setup do
+      header_content = "Basic " <> Base.encode64("doesnotreallymatter")
+      conn = :get
+      |> conn("/")
+      |> put_req_header("authorization", header_content)
+      {:ok, conn: conn}
+    end
+
+    test "no configuration at all", %{conn: conn} do
+      assert_raise(ArgumentError, fn -> SimplePlug.call(conn, []) end)
+    end
+
+    test "no key, no username", %{conn: conn} do
+      Application.put_env(:basic_auth, :my_auth, password: "simple:password")
+      assert_raise(ArgumentError, ~r/Missing/, fn -> SimplePlug.call(conn, []) end)
+    end
+
+    test "no key, no password", %{conn: conn} do
+      Application.put_env(:basic_auth, :my_auth, username: "admin")
+      assert_raise(ArgumentError, ~r/Missing/, fn -> SimplePlug.call(conn, []) end)
     end
   end
 end
