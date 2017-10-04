@@ -88,7 +88,7 @@ defmodule BasicAuth do
 
   defp respond(conn, ["Basic " <> encoded_string], options) do
     with {:ok, string} <- Base.decode64(encoded_string),
-         [username, password] <- String.split(string, ":")
+         [username, password] <- String.split(string, ":", parts: 2)
     do
       respond(conn, username, password, options)
     else
