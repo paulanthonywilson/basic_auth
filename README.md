@@ -38,6 +38,10 @@ plug BasicAuth, use_config: {:your_app, :your_config}
   ]
   ```
 
+As of v2.2.0, all configuration is read at runtime to support using 
+[REPLACE_OS_VARS](http://michal.muskala.eu/2017/07/30/configuring-elixir-libraries.html#distillerys-replaceosvars) 
+as part of a release.
+
   or choose to get one (or all) from environment variables, eg
 
   ```elixir
