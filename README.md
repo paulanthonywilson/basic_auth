@@ -85,13 +85,13 @@ Easy as that!
 If you're looking to authenticate only for a subset of actions in a controller you can use plug's `when action in` syntax as shown below
 
   ```elixir
-    plug BasicAuth, [use_config: {: your_app, : your_config}] when action in [:edit, :delete]
+    plug BasicAuth, [use_config: {:your_app, :your_config}] when action in [:edit, :delete]
   ```
 
   additionally you can exclude specific actions using `not`
 
   ```elixir
-    plug BasicAuth, [use_config: {: your_app, : your_config}] when not action in [:index, :show]
+    plug BasicAuth, [use_config: {:your_app, :your_config}] when not action in [:index, :show]
   ```
 
 ## Testing controllers with Basic Auth
