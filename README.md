@@ -129,7 +129,7 @@ end
 
 Then for any tests, I can simply pipe in this helper method to the connection process:
 ```elixir
-test "GET / successfully renders when basic auth credentials supplied" do
+test "GET / successfully renders when basic auth credentials supplied", %{conn: conn} do
   conn = conn
     |> using_basic_auth(@username, @password)
     |> get("/admin/users")
@@ -140,7 +140,7 @@ end
 
 And a test case without basic auth for completeness:
 ```elixir
-test "GET / without basic auth credentials prevents access" do
+test "GET / without basic auth credentials prevents access", %{conn: conn} do
   conn = conn
     |> get("/admin/users")
 
