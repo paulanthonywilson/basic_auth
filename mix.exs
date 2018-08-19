@@ -26,7 +26,7 @@ defmodule BasicAuth.Mixfile do
     [
      {:plug, "~> 0.14 or ~> 1.0"},
      {:ex_doc, ">= 0.0.0", only: :dev},
-     {:cowboy, "~> 1.0"},
+     {:cowboy, "~> 1.0", only: [:dev, :test]},
      {:credo, ">= 0.0.0", only: [:dev, :test]},
     ]
   end
