@@ -1,11 +1,12 @@
+# v2.2.3
+
+* Added a changelog for https://github.com/CultivateHQ/basic_auth/issues/37
+* Set Cowboy dependency to only :dev and :test, so that clients of the library are free to choose their own version of Cowboy.
+
+
 # old changes - predating the changelog
 
 Following reverse engineered from the Git log for the last few minor version increments
-
-## Current
-
-* Added a changelog for https://github.com/CultivateHQ/basic_auth/issues/37
-
 
 ## v2.2.2 (2017-12-12)
 
