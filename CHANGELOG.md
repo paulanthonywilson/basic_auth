@@ -21,7 +21,7 @@ Following reverse engineered from the Git log for the last few minor version inc
 
 * Add content type to page response headers from Scott S <scottswezey@users.noreply.github.com>
 
-### Other
+### Other
 
 * Various refactorings and increasing test coverage
 
