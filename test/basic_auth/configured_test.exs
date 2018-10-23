@@ -5,11 +5,16 @@ defmodule BasicAuth.ConfiguredTest do
   import BasicAuth.TestHelper,
     only: [
       call_without_credentials: 1,
-      call_with_credentials: 2
+      call_with_credentials: 2,
+      custom_response: 1
     ]
 
   defmodule SimplePlug do
     use DemoPlug, use_config: {:basic_auth, :my_auth}
+  end
+
+  defmodule SimplePlugWithCustomResponse do
+    use DemoPlug, use_config: {:basic_auth, :my_auth}, custom_response: &custom_response/1
   end
 
   setup do
@@ -75,6 +80,14 @@ defmodule BasicAuth.ConfiguredTest do
       assert conn.status == 401
     end
 
+    test "unauthorised with custom response return a 401 and custom header and body" do
+      conn = call_without_credentials(SimplePlugWithCustomResponse)
+
+      assert conn.status == 401
+      assert Plug.Conn.get_resp_header(conn, "content-type") == ["application/json; charset=utf-8"]
+      assert conn.resp_body == ~s[{"message": "Unauthorized"}]
+    end
+
     test "valid credentials returns a 200" do
       conn = call_with_credentials(SimplePlug, "admin:simple:password")
       assert conn.status == 200
@@ -135,4 +148,5 @@ defmodule BasicAuth.ConfiguredTest do
       assert_raise(ArgumentError, ~r/Missing/, fn -> SimplePlug.call(conn, []) end)
     end
   end
+
 end

@@ -8,6 +8,10 @@ defmodule BasicAuth do
     defstruct callback: nil, realm: nil
   end
 
+  def init(use_config: config_options, custom_response: custom_response) do
+    BasicAuth.Configured.init(config_options, custom_response)
+  end
+
   def init(use_config: config_options) do
     BasicAuth.Configured.init(config_options)
   end
