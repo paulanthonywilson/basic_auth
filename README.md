@@ -91,7 +91,7 @@ Easy as that!
 
 ### Authenticating with custom response body
 
-If you want using custom unauthorized response you can pass `custom_response`:
+If you want a custom unauthorised response body you can configure a `custom_response`:
 
 ```elixir
 plug BasicAuth,
@@ -110,7 +110,7 @@ plug BasicAuth,
     custom_response: &YouApp.Helpers.unauthorized_response/1
 ```
 
-Where `:custom_response` is you custom response function that takes a `conn`. Example:
+Where `:custom_response` is a custom response function that takes a `conn`. For example:
 
 ```elixir
 

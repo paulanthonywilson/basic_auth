@@ -1,3 +1,7 @@
+# v2.2.4
+
+* Configuration to provide a custom unauthorised response body: https://github.com/CultivateHQ/basic_auth/pull/47 
+
 # v2.2.3
 
 * Added a changelog for https://github.com/CultivateHQ/basic_auth/issues/37
