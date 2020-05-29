@@ -1,7 +1,11 @@
 defmodule BasicAuth do
   @moduledoc """
   Plug for adding basic authentication.
+
+  Deprecated as `Plug.BasicAuth` is now part of Plug
   """
+
+  @deprecated "Use `Plug.BasicAuth`"
 
   defmodule Callback do
     @moduledoc false
