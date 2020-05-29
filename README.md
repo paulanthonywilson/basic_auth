@@ -1,4 +1,12 @@
+# DEPRECATED
+
+`Plug.BasicAuth` is now part of [Plug](https://github.com/elixir-plug/plug).
+
+
+
+
 # BasicAuth
+
 
 This is an Elixir Plug for adding basic authentication into an application.
 
@@ -124,6 +132,7 @@ def unauthorized_response(conn) do
 
 
 ### Authenticating only for specific actions
+
 
 If you're looking to authenticate only for a subset of actions in a controller you can use plug's `when action in` syntax as shown below
 
